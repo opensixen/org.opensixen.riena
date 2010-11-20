@@ -14,7 +14,7 @@ public class ServiceConnection {
 	
 	private String host;
 	
-	private int port;
+	private String port;
 	
 	private String url;
 	
@@ -35,14 +35,14 @@ public class ServiceConnection {
 	/**
 	 * @return the port
 	 */
-	public int getPort() {
+	public String getPort() {
 		return port;
 	}
 
 	/**
 	 * @param port the port to set
 	 */
-	public void setPort(int port) {
+	public void setPort(String port) {
 		this.port = port;
 	}
 
@@ -58,7 +58,7 @@ public class ServiceConnection {
 		buff.append("http://");
 		buff.append(host);
 		
-		if (port > 0)	{
+		if (port != null)	{
 			buff.append(":").append(port).append("/");
 		}
 		

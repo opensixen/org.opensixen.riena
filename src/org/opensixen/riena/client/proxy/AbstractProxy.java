@@ -4,7 +4,10 @@
 package org.opensixen.riena.client.proxy;
 
 import java.lang.reflect.ParameterizedType;
+import java.net.URL;
 
+import org.eclipse.equinox.security.auth.ILoginContext;
+import org.eclipse.equinox.security.auth.LoginContextFactory;
 import org.eclipse.riena.communication.core.IRemoteServiceRegistration;
 import org.eclipse.riena.communication.core.factory.Register;
 
@@ -24,7 +27,7 @@ import org.osgi.framework.ServiceReference;
  *
  */
 public abstract class AbstractProxy<T extends IRienaService> {
-		
+			
 	private Class<T> clazz;
 
 	private static IServiceConnectionHandler serviceConnectionHandler;
@@ -36,6 +39,8 @@ public abstract class AbstractProxy<T extends IRienaService> {
 	private static BundleContext context = Activator.getContext();
 	
 	private ServiceReference serviceReference;
+
+	private static ILoginContext loginContext;
 
 	
 	
@@ -56,20 +61,40 @@ public abstract class AbstractProxy<T extends IRienaService> {
 	 * @param serviceConnectionHandler the serviceConnectionHandler to set
 	 */
 	public static void setServiceConnectionHandler(
-			IServiceConnectionHandler serviceConnectionHandler) {
-		AbstractProxy.serviceConnectionHandler = serviceConnectionHandler;
+			IServiceConnectionHandler aServiceConnectionHandler) {
+		serviceConnectionHandler = aServiceConnectionHandler;
 	}
 
+	/**
+	 * Register service proxy and do login
+	 * @return
+	 */
 	public boolean register()	{
 		if (registered)	{
 			return true;			
 		}
 		
 		register(clazz);
-		if (serviceReference != null)	{
+		if (serviceReference == null)	{
+			return false;
+		}
+		
+		registered = true;
+		
+		// If don't need auth, return true now
+		if (!needAuth())	{
 			return true;
 		}
-		return false;
+		
+		if (getJAASConfigFile() == null || getJAASConfigurationName() == null)	{
+			throw new RuntimeException("If your module need Auth, JAASConfigFile and JAASConfigurationName must be implemented and can't be null.");
+		}
+		
+		// Do auth
+		// Setup login context
+		loginContext = LoginContextFactory.createContext(getJAASConfigurationName(), getJAASConfigFile());
+		
+		return true;		
 		
 	}
 	
@@ -80,7 +105,6 @@ public abstract class AbstractProxy<T extends IRienaService> {
 		
 		//TODO
 		serviceRegistration.unregister();
-
 	}
 	
 	
@@ -116,31 +140,65 @@ public abstract class AbstractProxy<T extends IRienaService> {
 	 */
 	public abstract String getServicePath();
 	
+	/**
+	 * Return true if service need JAAS auth
+	 */
+	public abstract boolean needAuth();
+	
+	/**
+	 * Return JAAS configuration Name
+	 * if needAuth = true, this method must be implemented
+	 * @return
+	 */
+	public String getJAASConfigurationName() {
+		return null;
+	}
+	
+	/**
+	 * Return JAAS config file path
+	 * if needAuth = true, this method must be implemented
+	 * @return
+	 */
+	public URL getJAASConfigFile() {
+		return null;
+	}
+	
+	
+	
 	
 	public T getService()	{
 		T service = (T) context.getService(serviceReference);
-		if (service.testService())	{
-			return service;
+		try {
+			if (service.testService())	{
+				return service;
+			}
 		}
+		catch (Exception e)	{
+			// Unregister incorrect service
+			unregister();
+			throw new ServiceRegistrationException("No se puede registrar el servidor", e);
+		}
+		
 		throw new ServiceRegistrationException("No se puede registrar el servidor");
+		
 	}
 	
 	/**
 	 * Generate an url with host and webService
-	 * @param host
+	 * @param serverURL the URL returned by the IServiceConnectionHandler
 	 * @param webService
 	 * @return
 	 */
-	public static String getURL(String host, String webService)	{
-		if (host == null)	{
+	public static String getURL(String serverURL, String webService)	{
+		if (serverURL == null)	{
 			return null;
 		}
 		
-		if (host.endsWith("/"))	{
-			host = host.substring(0,host.lastIndexOf("/"));
+		if (serverURL.endsWith("/"))	{
+			serverURL = serverURL.substring(0,serverURL.lastIndexOf("/"));
 		}
 		
-		StringBuffer buff = new StringBuffer(host);
+		StringBuffer buff = new StringBuffer(serverURL);
 		buff.append("/hessian/");
 		
 		if (webService.startsWith("/"))	{
@@ -150,5 +208,9 @@ public abstract class AbstractProxy<T extends IRienaService> {
 		return buff.toString();
 	}	
 	
+	
+	public static ILoginContext getLoginContext()	{
+		return loginContext;
+	}
 	
 }

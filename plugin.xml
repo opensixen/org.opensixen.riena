@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="RienaLoginModule"
+         point="org.eclipse.equinox.security.loginModule">
+      <loginModule
+            class="org.opensixen.riena.jaas.RienaLoginModule">
+      </loginModule>
+   </extension>
+
+</plugin>

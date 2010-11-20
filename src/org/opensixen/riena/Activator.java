@@ -29,7 +29,7 @@ public class Activator implements BundleActivator  {
 	 */
 	public void start(BundleContext context) throws Exception {
 		Activator.context = context;
-		plugin = this;
+		plugin = this;								
 	}
 
 	/*
