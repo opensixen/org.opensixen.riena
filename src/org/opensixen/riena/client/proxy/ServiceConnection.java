@@ -18,6 +18,8 @@ public class ServiceConnection {
 	
 	private String url;
 	
+	private String service;
+	
 	/**
 	 * @return the host
 	 */
@@ -46,6 +48,21 @@ public class ServiceConnection {
 		this.port = port;
 	}
 
+	
+	/**
+	 * @return the service
+	 */
+	public String getService() {
+		return service;
+	}
+
+	/**
+	 * @param service the service to set
+	 */
+	public void setService(String service) {
+		this.service = service;
+	}
+
 	/**
 	 * @return the url
 	 */
@@ -59,7 +76,11 @@ public class ServiceConnection {
 		buff.append(host);
 		
 		if (port != null)	{
-			buff.append(":").append(port).append("/");
+			buff.append(":").append(port);
+		}
+		
+		if (getService() != null)	{
+			buff.append("/").append(getService()).append("/");
 		}
 		
 		return buff.toString();
