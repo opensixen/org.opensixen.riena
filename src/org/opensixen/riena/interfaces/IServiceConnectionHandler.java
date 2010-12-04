@@ -15,5 +15,10 @@ import org.opensixen.riena.client.proxy.ServiceConnection;
 public interface IServiceConnectionHandler {
 	
 	public ServiceConnection getServiceConnection();
+	
+	
+	public void addConnectionChangeListener(IConnectionChangeListener listener);
+	
+	public void removeConnectionChangeListener(IConnectionChangeListener listener);
 
 }

@@ -13,6 +13,7 @@ import org.eclipse.riena.communication.core.factory.Register;
 
 import org.opensixen.riena.Activator;
 import org.opensixen.riena.exceptions.ServiceRegistrationException;
+import org.opensixen.riena.interfaces.IConnectionChangeListener;
 import org.opensixen.riena.interfaces.IRienaService;
 import org.opensixen.riena.interfaces.IServiceConnectionHandler;
 import org.osgi.framework.BundleContext;
@@ -26,43 +27,47 @@ import org.osgi.framework.ServiceReference;
  * @param <T>
  *
  */
-public abstract class AbstractProxy<T extends IRienaService> {
+public abstract class AbstractProxy<T extends IRienaService> implements IConnectionChangeListener {
 			
 	private Class<T> clazz;
 
-	private static IServiceConnectionHandler serviceConnectionHandler;
+	private IServiceConnectionHandler serviceConnectionHandler;
 	
 	private boolean registered = false;
 	
-	private static IRemoteServiceRegistration serviceRegistration;
+	private IRemoteServiceRegistration serviceRegistration;
 	
 	private static BundleContext context = Activator.getContext();
 	
 	private ServiceReference serviceReference;
 
-	private static ILoginContext loginContext;
+	private ILoginContext loginContext;
 
 	
 	
 	protected AbstractProxy()	{		
 		this.clazz = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-		register();
 	}
 	
 	
 	/**
 	 * @return the serviceConnectionHandler
 	 */
-	public static IServiceConnectionHandler getServiceConnectionHandler() {
+	public IServiceConnectionHandler getServiceConnectionHandler() {
 		return serviceConnectionHandler;
 	}
 
 	/**
 	 * @param serviceConnectionHandler the serviceConnectionHandler to set
 	 */
-	public static void setServiceConnectionHandler(
+	public void setServiceConnectionHandler(
 			IServiceConnectionHandler aServiceConnectionHandler) {
 		serviceConnectionHandler = aServiceConnectionHandler;
+		serviceConnectionHandler.addConnectionChangeListener(this);
+		if (registered)	{
+			unregister();
+		}
+		register();
 	}
 
 	/**
@@ -94,9 +99,21 @@ public abstract class AbstractProxy<T extends IRienaService> {
 		// Setup login context
 		loginContext = LoginContextFactory.createContext(getJAASConfigurationName(), getJAASConfigFile());
 		
+		// Do something after register
+		afterRegister();
+		
 		return true;		
 		
 	}
+	
+	/**
+	 * Do something after register
+	 * 
+	 * This method must be override
+	 */
+	protected void afterRegister()	{
+	}
+	
 	
 	public void unregister()	{
 		if (!registered)	{
@@ -209,8 +226,20 @@ public abstract class AbstractProxy<T extends IRienaService> {
 	}	
 	
 	
-	public static ILoginContext getLoginContext()	{
+	public ILoginContext getLoginContext()	{
 		return loginContext;
 	}
+
+
+	/* (non-Javadoc)
+	 * @see org.opensixen.riena.interfaces.IConnectionChangeListener#fireConnectionChange()
+	 */
+	@Override
+	public boolean fireConnectionChange() {
+		unregister();
+		return register();
+	}
+	
+	
 	
 }

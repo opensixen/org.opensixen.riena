@@ -79,8 +79,8 @@ public class ServiceConnection {
 			buff.append(":").append(port);
 		}
 		
-		if (getService() != null)	{
-			buff.append("/").append(getService()).append("/");
+		if (getService() != null && getService().length() > 0)	{
+			buff.append("/").append(getService());
 		}
 		
 		return buff.toString();
