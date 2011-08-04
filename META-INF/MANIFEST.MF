@@ -16,3 +16,4 @@ Export-Package: org.opensixen.riena,
  org.opensixen.riena.exceptions,
  org.opensixen.riena.interfaces,
  org.opensixen.riena.server
+Bundle-ClassPath: .

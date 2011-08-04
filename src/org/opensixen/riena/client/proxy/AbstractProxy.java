@@ -144,17 +144,17 @@ public abstract class AbstractProxy<T extends IRienaService> implements IConnect
 		registered = true;
 		
 		// If don't need auth, return true now
-		if (!needAuth())	{
-			return true;
+		if (needAuth())	{
+			
+			if (getJAASConfigFile() == null || getJAASConfigurationName() == null)	{
+				throw new RuntimeException("If your module need Auth, JAASConfigFile and JAASConfigurationName must be implemented and can't be null.");
+			}
+			
+			// Do auth
+			// Setup login context
+			loginContext = LoginContextFactory.createContext(getJAASConfigurationName(), getJAASConfigFile());
+
 		}
-		
-		if (getJAASConfigFile() == null || getJAASConfigurationName() == null)	{
-			throw new RuntimeException("If your module need Auth, JAASConfigFile and JAASConfigurationName must be implemented and can't be null.");
-		}
-		
-		// Do auth
-		// Setup login context
-		loginContext = LoginContextFactory.createContext(getJAASConfigurationName(), getJAASConfigFile());
 		
 		// Do something after register
 		afterRegister();

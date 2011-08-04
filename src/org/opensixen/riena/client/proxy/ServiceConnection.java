@@ -85,6 +85,7 @@ public class ServiceConnection {
 	}
 
 	/**
+	 * Setup the target hostname or ip address
 	 * @param host the host to set
 	 */
 	public void setHost(String host) {
@@ -98,7 +99,8 @@ public class ServiceConnection {
 		return port;
 	}
 
-	/**
+	/** 
+	 * Setup the port where connect in the server
 	 * @param port the port to set
 	 */
 	public void setPort(String port) {
@@ -114,6 +116,14 @@ public class ServiceConnection {
 	}
 
 	/**
+	 * Setup the webapp in the server. 
+	 * The default service name for a 
+	 * opensixen server installation is 
+	 * "osx".
+	 * 
+	 * If null, not service are used 
+	 * when generate the url
+	 * 
 	 * @param service the service to set
 	 */
 	public void setService(String service) {
@@ -121,6 +131,11 @@ public class ServiceConnection {
 	}
 
 	/**
+	 * Return the connection url.
+	 * If url param is set, return just 
+	 * this value. Else, return an string
+	 * composed by:
+	 * http://[host]:[port](/[service]?)
 	 * @return the url
 	 */
 	public String getUrl() {
@@ -145,6 +160,8 @@ public class ServiceConnection {
 	}
 
 	/**
+	 * Setup the full url
+	 * If set, others parameters are just ignored.	
 	 * @param url the url to set
 	 */
 	public void setUrl(String url) {
